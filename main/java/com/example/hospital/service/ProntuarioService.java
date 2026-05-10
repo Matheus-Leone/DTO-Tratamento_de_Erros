@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.hospital.dto.ProntuarioRequestDTO;
 import com.example.hospital.dto.ProntuarioResponseDTO;
+import com.example.hospital.exception.RegraNegocioException;
 import com.example.hospital.model.Paciente;
 import com.example.hospital.model.Prontuario;
 import com.example.hospital.repository.PacienteRepository;
@@ -30,23 +31,26 @@ public class ProntuarioService {
     }
 
     public ProntuarioResponseDTO buscarPorId(Long id) {
-        Prontuario prontuario = repository.findById(id).orElse(null);
 
-        if (prontuario == null) {
-            return null;
-        }
+        Prontuario prontuario = repository.findById(id)
+                .orElseThrow(() ->
+                        new RegraNegocioException("Prontuário não encontrado"));
 
         return new ProntuarioResponseDTO(prontuario);
     }
 
     public ProntuarioResponseDTO salvar(ProntuarioRequestDTO dto) {
+
         Prontuario prontuario = new Prontuario();
 
         prontuario.setTipoSanguineo(dto.getTipoSanguineo());
         prontuario.setAlergia(dto.getAlergia());
         prontuario.setObservacoes(dto.getObservacoes());
 
-        Paciente paciente = pacienteRepository.findById(dto.getPacienteId()).orElse(null);
+        Paciente paciente = pacienteRepository.findById(dto.getPacienteId())
+                .orElseThrow(() ->
+                        new RegraNegocioException("Paciente não encontrado"));
+
         prontuario.setPaciente(paciente);
 
         Prontuario prontuarioSalvo = repository.save(prontuario);
@@ -55,17 +59,19 @@ public class ProntuarioService {
     }
 
     public ProntuarioResponseDTO atualizar(Long id, ProntuarioRequestDTO dto) {
-        Prontuario prontuarioExistente = repository.findById(id).orElse(null);
 
-        if (prontuarioExistente == null) {
-            return null;
-        }
+        Prontuario prontuarioExistente = repository.findById(id)
+                .orElseThrow(() ->
+                        new RegraNegocioException("Prontuário não encontrado"));
 
         prontuarioExistente.setTipoSanguineo(dto.getTipoSanguineo());
         prontuarioExistente.setAlergia(dto.getAlergia());
         prontuarioExistente.setObservacoes(dto.getObservacoes());
 
-        Paciente paciente = pacienteRepository.findById(dto.getPacienteId()).orElse(null);
+        Paciente paciente = pacienteRepository.findById(dto.getPacienteId())
+                .orElseThrow(() ->
+                        new RegraNegocioException("Paciente não encontrado"));
+
         prontuarioExistente.setPaciente(paciente);
 
         Prontuario atualizado = repository.save(prontuarioExistente);
@@ -74,11 +80,13 @@ public class ProntuarioService {
     }
 
     public boolean deletar(Long id) {
+
         if (!repository.existsById(id)) {
-            return false;
+            throw new RegraNegocioException("Prontuário não encontrado");
         }
 
         repository.deleteById(id);
+
         return true;
     }
 }

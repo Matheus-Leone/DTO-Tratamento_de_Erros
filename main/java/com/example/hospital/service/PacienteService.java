@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.hospital.dto.PacienteRequestDTO;
 import com.example.hospital.dto.PacienteResponseDTO;
+import com.example.hospital.exception.RegraNegocioException;
 import com.example.hospital.model.Paciente;
 import com.example.hospital.repository.PacienteRepository;
 
@@ -26,16 +27,16 @@ public class PacienteService {
     }
 
     public PacienteResponseDTO buscarPorId(Long id) {
-        Paciente paciente = repository.findById(id).orElse(null);
 
-        if (paciente == null) {
-            return null;
-        }
+        Paciente paciente = repository.findById(id)
+                .orElseThrow(() ->
+                        new RegraNegocioException("Paciente não encontrado"));
 
         return new PacienteResponseDTO(paciente);
     }
 
     public PacienteResponseDTO salvar(PacienteRequestDTO dto) {
+
         Paciente paciente = new Paciente();
 
         paciente.setNome(dto.getNome());
@@ -48,11 +49,10 @@ public class PacienteService {
     }
 
     public PacienteResponseDTO atualizar(Long id, PacienteRequestDTO dto) {
-        Paciente pacienteExistente = repository.findById(id).orElse(null);
 
-        if (pacienteExistente == null) {
-            return null;
-        }
+        Paciente pacienteExistente = repository.findById(id)
+                .orElseThrow(() ->
+                        new RegraNegocioException("Paciente não encontrado"));
 
         pacienteExistente.setNome(dto.getNome());
         pacienteExistente.setCpf(dto.getCpf());
@@ -64,11 +64,13 @@ public class PacienteService {
     }
 
     public boolean deletar(Long id) {
+
         if (!repository.existsById(id)) {
-            return false;
+            throw new RegraNegocioException("Paciente não encontrado");
         }
 
         repository.deleteById(id);
+
         return true;
     }
 }

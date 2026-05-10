@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.hospital.dto.ConvenioRequestDTO;
 import com.example.hospital.dto.ConvenioResponseDTO;
+import com.example.hospital.exception.RegraNegocioException;
 import com.example.hospital.model.Convenio;
 import com.example.hospital.repository.ConvenioRepository;
 
@@ -26,16 +27,16 @@ public class ConvenioService {
     }
 
     public ConvenioResponseDTO buscarPorId(Long id) {
-        Convenio convenio = repository.findById(id).orElse(null);
 
-        if (convenio == null) {
-            return null;
-        }
+        Convenio convenio = repository.findById(id)
+                .orElseThrow(() ->
+                        new RegraNegocioException("Convênio não encontrado"));
 
         return new ConvenioResponseDTO(convenio);
     }
 
     public ConvenioResponseDTO salvar(ConvenioRequestDTO dto) {
+
         Convenio convenio = new Convenio();
 
         convenio.setNome(dto.getNome());
@@ -47,11 +48,10 @@ public class ConvenioService {
     }
 
     public ConvenioResponseDTO atualizar(Long id, ConvenioRequestDTO dto) {
-        Convenio convenioExistente = repository.findById(id).orElse(null);
 
-        if (convenioExistente == null) {
-            return null;
-        }
+        Convenio convenioExistente = repository.findById(id)
+                .orElseThrow(() ->
+                        new RegraNegocioException("Convênio não encontrado"));
 
         convenioExistente.setNome(dto.getNome());
         convenioExistente.setCnpj(dto.getCnpj());
@@ -62,11 +62,13 @@ public class ConvenioService {
     }
 
     public boolean deletar(Long id) {
+
         if (!repository.existsById(id)) {
-            return false;
+            throw new RegraNegocioException("Convênio não encontrado");
         }
 
         repository.deleteById(id);
+
         return true;
     }
 }
